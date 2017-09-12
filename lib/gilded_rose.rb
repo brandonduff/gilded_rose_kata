@@ -1,5 +1,5 @@
 def update_quality(items)
-  items.each { |item| item.update }
+  items.each(&:update)
 end
 
 class Item
