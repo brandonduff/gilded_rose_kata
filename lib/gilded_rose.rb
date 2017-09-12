@@ -1,53 +1,120 @@
 def update_quality(items)
-  items.each do |item|
-    if item.name != 'Aged Brie' && item.name != 'Backstage passes to a TAFKAL80ETC concert'
-      if item.quality > 0
-        if item.name != 'Sulfuras, Hand of Ragnaros'
-          item.quality -= 1
-        end
-      end
-    else
-      if item.quality < 50
-        item.quality += 1
-        if item.name == 'Backstage passes to a TAFKAL80ETC concert'
-          if item.sell_in < 11
-            if item.quality < 50
-              item.quality += 1
-            end
-          end
-          if item.sell_in < 6
-            if item.quality < 50
-              item.quality += 1
-            end
-          end
-        end
-      end
-    end
-    if item.name != 'Sulfuras, Hand of Ragnaros'
-      item.sell_in -= 1
-    end
-    if item.sell_in < 0
-      if item.name != "Aged Brie"
-        if item.name != 'Backstage passes to a TAFKAL80ETC concert'
-          if item.quality > 0
-            if item.name != 'Sulfuras, Hand of Ragnaros'
-              item.quality -= 1
-            end
-          end
-        else
-          item.quality = item.quality - item.quality
-        end
-      else
-        if item.quality < 50
-          item.quality += 1
-        end
-      end
-    end
+  items.each { |item| item.update }
+end
+
+class Item
+
+  attr_accessor :name, :sell_in, :quality
+
+  def self.new(name, sell_in, quality)
+    item_class = name == self.name ? self : subclasses.detect { |subclass| subclass.name == name }
+    object = item_class.allocate
+    object.send(:initialize, sell_in, quality)
+    object
+  end
+
+  def self.subclasses
+    ObjectSpace.each_object(Class).select { |klass| klass < self }
+  end
+
+  def self.name
+    'NORMAL ITEM'
+  end
+
+  def initialize(sell_in, quality)
+    @sell_in = sell_in
+    @quality = quality
+  end
+
+  def update
+    @quality -= quality_scalar
+    @sell_in -= sell_in_scalar
+    quality_cap
+  end
+
+  private
+
+  def sell_in_scalar
+    1
+  end
+
+  def quality_cap
+    @quality = 0 if @quality < 0
+  end
+
+  def quality_scalar
+    @sell_in <= 0 ? 2 : 1
   end
 end
 
-#----------------------------
-# DO NOT CHANGE THINGS BELOW
-#----------------------------
+class AgedBrie < Item
+  def self.name
+    'Aged Brie'
+  end
 
-Item = Struct.new(:name, :sell_in, :quality)
+  private
+
+  def quality_scalar
+    -super
+  end
+
+  def quality_cap
+    @quality = 50 if @quality > 50
+  end
+end
+
+class Sulfuras < Item
+  def self.name
+    'Sulfuras, Hand of Ragnaros'
+  end
+
+  private
+
+  def quality_scalar
+    0
+  end
+
+  def sell_in_scalar
+    0
+  end
+
+  def quality_cap
+
+  end
+end
+
+class BackstagePass < Item
+  def self.name
+    'Backstage passes to a TAFKAL80ETC concert'
+  end
+
+  private
+
+  def quality_scalar
+    if @sell_in > 10
+      -1
+    elsif @sell_in > 5
+      -2
+    elsif @sell_in > 0
+      -3
+    else
+      @quality
+    end
+  end
+
+  def quality_cap
+    @quality = 50 if @quality > 50
+  end
+end
+
+class ConjuredItem < Item
+  def self.name
+    'Conjured Mana Cake'
+  end
+
+  private
+
+  def quality_scalar
+    super * 2
+  end
+end
