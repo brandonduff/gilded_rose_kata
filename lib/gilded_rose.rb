@@ -2,8 +2,19 @@ def update_quality(items)
   items.each(&:update)
 end
 
+module TracksSubclasses
+  def inherited(subclass)
+    subclasses.push(subclass)
+  end
+
+  def subclasses
+    @@subclasses ||= [self]
+  end
+end
+
 class Item
 
+  extend TracksSubclasses
   attr_accessor :name, :sell_in, :quality
 
   def self.new(name, sell_in, quality)
@@ -11,14 +22,6 @@ class Item
     object = item_class.allocate
     object.initialize(sell_in, quality)
     object
-  end
-
-  def self.inherited(subclass)
-    subclasses.push(subclass)
-  end
-
-  def self.subclasses
-    @@subclasses ||= [self]
   end
 
   def self.name
