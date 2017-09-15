@@ -7,14 +7,14 @@ class Item
   attr_accessor :name, :sell_in, :quality
 
   def self.new(name, sell_in, quality)
-    item_class = name == self.name ? self : subclasses.detect { |subclass| subclass.name == name }
+    item_class = subclasses.detect { |subclass| subclass.name == name }
     object = item_class.allocate
     object.send(:initialize, sell_in, quality)
     object
   end
 
   def self.subclasses
-    ObjectSpace.each_object(Class).select { |klass| klass < self }
+    ObjectSpace.each_object(Class).select { |klass| klass <= self }
   end
 
   def self.name
