@@ -9,7 +9,7 @@ class Item
   def self.new(name, sell_in, quality)
     item_class = subclasses.detect { |subclass| subclass.name == name }
     object = item_class.allocate
-    object.send(:initialize, sell_in, quality)
+    object.initialize(sell_in, quality)
     object
   end
 
@@ -21,7 +21,7 @@ class Item
     'NORMAL ITEM'
   end
 
-  def initialize(sell_in, quality)
+  public def initialize(sell_in, quality)
     @sell_in = sell_in
     @quality = quality
   end
