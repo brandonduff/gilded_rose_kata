@@ -13,8 +13,12 @@ class Item
     object
   end
 
+  def self.inherited(subclass)
+    subclasses.push(subclass)
+  end
+
   def self.subclasses
-    ObjectSpace.each_object(Class).select { |klass| klass <= self }
+    @@subclasses ||= [self]
   end
 
   def self.name
